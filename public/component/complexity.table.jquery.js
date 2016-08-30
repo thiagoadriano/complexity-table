@@ -89,7 +89,7 @@
             console.log("[Fim!]");
             console.log("[" + new Date() + "]");
         }
-    };
+    }; 
     var assert = function (test, msg) {
         if (CT.debug) {
             console.log("[Inicio:]");
@@ -665,11 +665,11 @@
     $.fn.ComplexityTable = function (options) {
         var that = this;
         opt = $.extend(defaults, options);
-
         try {
             if (CT.BuildStartCheck()) {
                 CT.Init.call(that);
             }
+            
         } catch (err) {
             console.error(err);
         }

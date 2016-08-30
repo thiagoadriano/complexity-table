@@ -1,5 +1,5 @@
 {
-  "name": "workspace",
+  "name": "CreateTableComplexyComponent",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,7 +7,14 @@
     "express": "^4.14.0",
     "express-router": "^0.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^2.0.12",
+    "gulp-js-minify": "0.0.3",
+    "gulp-shell": "^0.5.2",
+    "gulp-uglify": "^2.0.0",
+    "gulp-zip": "^3.2.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -15,6 +15,6 @@
     "tests"
   ],
   "dependencies": {
-    "malihu-scrollbar-import": "https://github.com/SephVelut/malihu-scrollbar-import.git"
+    "jquery": "^3.1.0"
   }
 }
