@@ -96,3 +96,66 @@
   font-size: 14px;
   
 }
+#ct-info{
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 10000;
+    padding: 20px;
+}
+#ct-info button{
+    position: absolute;
+    right: -7px;
+    top: -7px;
+    border-radius: 50%;
+    font-size: 8px;
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    font-family: cursive;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    outline: none;
+}
+
+#ct-info p{
+  color:#fff;
+  margin: 0;
+  font-weight: bold;
+  font-family: 'Arial';
+  font-size: 16px;
+}
+
+#ct-info.ct-error{
+  background: rgba(76, 2, 2, 0.95);
+}
+#ct-info.ct-error button{
+  background: #3a0000;
+}
+#ct-info.ct-error button:hover{
+  background: #fff;
+  color:#3a0000;
+}
+
+#ct-info.ct-success{
+  background: rgba(0, 105, 43, 0.95);
+}
+#ct-info.ct-success button{
+  background: #003a12;
+}
+#ct-info.ct-success button:hover{
+  background: #fff;
+  color:#003a12;
+}
+
+#ct-info.ct-warning{
+  background: rgba(160, 130, 18, 0.95);
+}
+#ct-info.ct-warning button{
+  background: #3a2b00;
+}
+#ct-info.ct-warning button:hover{
+  background: #fff;
+  color:#3a2b00;
+}

@@ -1,11 +1,21 @@
-/**
+/* global jQuery */
+
+/** 
  * @classe: ComplexityTable
  * @description: Classe para criação da tabela com cabeçalhos e dados dinamicos
  *                 com congelamento do cabeçalho e colunas
  * @version: 0.0.1
  *
  */
- //TODO: realizar o segundo cenário
+ //TODO: refatorar os metodos por conta de objetos nulos
+ //TODO: colocar alerta nos erros 
+ //TODO: Colocar link nos campos
+ //TODO: Fazzer ultima coluna rolar com scroll quando naõ existir coluna a direita fixa
+ //TODO: Ajustar para quando não tiver cabecalhos em grupo
+ //TODO: Finalizar o carregamento com scroll
+ //TODO: realizar o segundo cenário: 
+        //Duas linhas para cada indicador
+        //Duas colunas fixas a esquerda
 (function ($) {
     'use strict';
     var CT = {};
@@ -609,6 +619,62 @@
              }
          }
      }
+     
+     /**
+      * Alerta para eventos durante o processo
+      * @param {string} name - recebe a mensagem para passar no alerta
+      * @param {number} type - seleção do tipo de mensagem:
+      * @param {number} type == 1 - comportamento de layout de mensagem de sucesso
+      * @param {number} type == 2 - comportamento de layout de mensagem de alerta tipo warning
+      * @param {number} default type  - comportamento de layout de mensagem de erro
+      * @return {object} - retorna as funções de controle
+      * @return {object} object.show
+      * @return {object} object.close
+      * @return {object} object.showInterval
+      */
+      CT.Alert = function(msg, type){
+          var typeEvent = type === 1 ? "ct-success" : type === 2 ? "ct-warning" : "ct-error";
+          var id = "ct-info";
+          var template = $('<div id="' + id + '" class="'+ typeEvent +'" >' +
+                                '<button type="button">X</button>'+
+                                '<p></p>'+
+                            '</div>');
+          var p = template.find('p');
+          var button = template.find('button');
+          var txtMsg = msg !== null && msg !== "" && msg !== undefined ? msg : "Erro ao realizar o procedimento."; 
+          
+          p.text(txtMsg);
+          
+          var clicked = function(){
+              button.on('click', function(){
+                  _close();
+              });
+          };
+          
+          var _show = function(){
+              if($("#" + id).is(':visible')) $("#" + id).remove();
+              clicked();
+              $('body').append(template);
+          };
+          
+          var _close = function(){
+              $("#" + id).fadeOut(800, function(){
+                  $(this).remove();
+              });
+          };
+          
+          var _showInterval = function(time){
+              var timer = time || 5000;
+              _show();
+              setTimeout(_close, timer);
+          };
+          
+          return {
+              show: _show,
+              close: _close,
+              showInterval: _showInterval
+          };
+      };
 
     /**
      * Metodo para iniciar o componente
@@ -661,6 +727,7 @@
     $.fn.ComplexityTable = function (options) {
         var that = this;
         opt = $.extend(defaults, options);
+        
         try {
             if (CT.BuildStartCheck()) {
                 CT.MountPrincipalContainer(that);
