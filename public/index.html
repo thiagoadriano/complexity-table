@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="UTF-8">
+		<title>Componente PDE</title>
+		<link rel="stylesheet" type="text/css" href="component/complexity.table.jquery.css">
+	</head>
+</html>
+<body>
+	
+	<div id="ComplexityTable"></div>
+
+	<script src="lib/jquery/jquery-3.1.0.min.js"></script>
+	<script src="component/complexity.table.jquery.js"></script>
+	<script>
+	/* global $ */
+	$(function(){
+		$("#ComplexityTable").ComplexityTable({
+			urlDados: "/data/list",
+			urlCabecalho: "/data/head",
+			container: {
+				width: 1100, 
+				height: 528
+			},
+			colFixedLeft:  true,
+			colFixedRight: true,
+			destacar: true,
+		});
+	});
+	</script>
+</body>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="UTF-8">
+		<title>Componente PDE</title>
+		<link rel="stylesheet" type="text/css" href="assets/css/complexy.table.css">
+	</head>
+</html>
+<body>
+	
+	<div id="ComplaxyTable"></div>
+
+	<script src="assets/lib/jquery/jquery-3.1.0.min.js"></script>
+	<script src="assets/js/parse.class.js"></script>
+	<script>
+	/* global $ */
+	$(function(){
+		$("#ComplaxyTable").CreateTable({
+			urlDados: "assets/dados/pde_mapa_alimentacao.json",
+			urlCabecalho: "assets/dados/heads.json",
+			parametros: [{nome: "mes", valor: "05"}, {nome: "ano", valor: "16"}],
+			container: {
+				width: 1200,
+				height: 528
+			},
+			limite: 15,
+			colFixedLeft:  true,
+			colFixedRight: true
+		});
+	});
+	</script>
+</body>

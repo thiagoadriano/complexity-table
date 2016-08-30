@@ -1,0 +1,20 @@
+{
+  "name": "CreateTableComponent",
+  "main": "index.js",
+  "authors": [
+    "Thiago Adriano <thiago.s.adriano@gmail.com>"
+  ],
+  "description": "",
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "malihu-scrollbar-import": "https://github.com/SephVelut/malihu-scrollbar-import.git"
+  }
+}
