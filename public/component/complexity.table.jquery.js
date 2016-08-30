@@ -25,7 +25,8 @@
     CT.TotalPages = 0;
     CT.Params = "";
     CT.COlTotal = 0;
-    CT.debug = true;
+    CT.debug = true
+    CT.idContiner = null;
 
     var opt = {};
 
@@ -106,8 +107,10 @@
                 }
 
             },
-            error: function (err) {
-                throw new Error("Erro ao relizar o carregamento dos Cabeçalhos: \n" + err);
+            error: function (err, e, w,r) {
+                CT.ExceptionError("Erro inesperado aconteceu.<br>" + "<br>" + err.statusText  + "<br>" + err.responseText).show();
+                console.error(err);
+                throw new Error(err.responseText);
             }
         });
     };
@@ -619,6 +622,27 @@
              }
          }
      }
+     /**
+      * Colocar exceção na tela com erro informando ao usuário o procedimento
+      * @param {string} msg - mensagem da exceção
+      */
+     CT.ExceptionError = function(msg){
+         var template = $("<div id='ct-exception'><h2>Erro na aplicação</h2><p></p></div>");
+         var p = template.find('p');
+         p.html(msg);
+         return {
+             show: function(){
+                 $("#" + CT.idContiner).find('div').remove();
+                 $("#" + CT.idContiner).html('');
+                 $("#" + CT.idContiner).append(template);
+             },
+             hide: function(){
+                 $("#ct-exception").fadeOut("1000", function(){
+                     $(this).remove();
+                 });
+             }
+         }
+     }
      
      /**
       * Alerta para eventos durante o processo
@@ -730,6 +754,7 @@
         
         try {
             if (CT.BuildStartCheck()) {
+                CT.idContiner = that.attr("id");
                 CT.MountPrincipalContainer(that);
                 CT.Init.call(that);
             }

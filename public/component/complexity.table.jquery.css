@@ -159,3 +159,29 @@
   background: #fff;
   color:#3a2b00;
 }
+#ct-exception{
+    background-color: rgba(0,0,0,.75);
+    width: 450px;
+    min-height: 200px;
+    top: 50%;
+    left: 50%;
+    margin-left: calc(-450px / 2);
+    margin-top: calc(-200px / 2);
+    z-index: 15000;
+    border-radius: 7px;
+    position: absolute;
+    padding: 20px 30px;
+}
+#ct-exception h2{
+    margin: 0 0 25px;
+    font-size: 30px;
+    color: #fff;
+    letter-spacing: 0.03em;
+    font-family: "Arial";
+}
+#ct-exception p{
+  color: #fff;
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  font-family: "Arial";
+}
