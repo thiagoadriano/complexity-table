@@ -5,7 +5,6 @@
  * @version: 0.0.1
  *
  */
- //TODO: Achar solução para rolagem vertical
  //TODO: realizar o segundo cenário
 (function ($) {
     'use strict';
@@ -70,33 +69,9 @@
         },
         nomePropriedades: {
             indicador: "indicador",
-            valores: "values",
+            valores: "status",
             registros: "totalRegistros",
             cabecalhos: "cabecalhos"
-        }
-    };
-
-
-    /**
-     * Log Debug da construção da aplicação
-     *
-     */
-    var log = function (msg) {
-        if (CT.debug) {
-            console.log("[Inicio:]");
-            console.log("[" + new Date() + "]");
-            console.debug("[" + msg + "]");
-            console.log("[Fim!]");
-            console.log("[" + new Date() + "]");
-        }
-    }; 
-    var assert = function (test, msg) {
-        if (CT.debug) {
-            console.log("[Inicio:]");
-            console.log("[" + new Date() + "]");
-            console.assert(test, msg);
-            console.log("[Fim!]");
-            console.log("[" + new Date() + "]");
         }
     };
 
@@ -122,7 +97,7 @@
 
             },
             error: function (err) {
-                throw new Error("Erro ao relizar o carregamento dos Cabeçalhos: " + err);
+                throw new Error("Erro ao relizar o carregamento dos Cabeçalhos: \n" + err);
             }
         });
     };
@@ -153,7 +128,7 @@
         if(opt.limite > 0){
             return "?skip=" + opt.limite + "&page=" + CT.Page + CT.Params;
         }else{
-            return "?" + CT.Params.replace(/&$/, '');
+            return "?" + CT.Params.replace(/^&/, '');
         }
     };
 
@@ -161,7 +136,7 @@
      * Verifica a existencia de paginação e quantas págins tera
      */
     CT.setTotalPages = function(){
-      if(opt.limite > 0){
+      if(opt.limite > 0 && CT.TotalRegistros > 0){
           CT.TotalPages = Math.ceil( CT.TotalRegistros / opt.limite );
       }
     };
@@ -172,7 +147,9 @@
     CT.mountParams = function () {
         if (CT.isArray(opt.parametros)) {
             opt.parametros.forEach(function (item) {
-                CT.Params += item.nome + "=" + item.valor + "&";
+                for(var j in item){
+                    CT.Params += j + "=" + item[j] + "&";
+                }
             });
             CT.Params = CT.Params.replace(/&$/, '').replace(/^(.*)/, "&$1");
         }
@@ -205,8 +182,8 @@
      */
     CT.checkExistGroup = function (data) {
         if (CT.isArray(data)) {
-            data.some(function (item) {
-                if (item.grupo.length) {
+            data.forEach(function (item) {
+                if (item.grupo !== null && item.grupo.length) {
                     CT.existGroup = true;
                     return true;
                 }
@@ -231,7 +208,8 @@
 
             data.forEach(function (el, i, arr) {
                 var th = $('<th/>');
-                if (el.grupo.length) {
+
+                if (el.grupo !== null && el.grupo.length > 0) {
                     th.html("<span>" + el.nome + "</span>")
                         .attr("colspan", el.grupo.length)
                         .addClass(opt.classes.bgHeadColor)
@@ -565,6 +543,21 @@
         }
 
     };
+    
+    
+    /**
+     * Fixa as configurações do container principal
+     * @param {object} el - recebe o elemento this que chama o construtor
+     */
+    CT.MountPrincipalContainer = function(el){
+        $(el).css({
+             position: "relative", 
+             width: opt.container.width, 
+             height: opt.container.height,
+             marginLeft: "auto",
+             marginRight: "auto"
+         });
+    };
 
     /**
      * Metodo para configurar tabela e inserir na página
@@ -584,17 +577,18 @@
     CT.MountContainer = function () {
         var heightGroup = !CT.existGroup ? opt.Tamanhos.celula.height : opt.Tamanhos.celula.height * 2;
         var widthPadding = !opt.colFixedLeft ? 0 : opt.Tamanhos.PrimeiraCelula.width;
-        var widthfixColRigth = opt.colFixedRight ? 0 : opt.Tamanhos.UltimaCelula.width;
+        var widthfixColRigth = !opt.colFixedRight ? 0 : opt.Tamanhos.UltimaCelula.width;
+        
         wrap.css({
-            width: opt.container.width,
-            height: opt.container.height,
+            width: opt.container.width - widthPadding,
+            height: opt.container.height - heightGroup,
             paddingLeft: widthPadding,
             paddingTop: heightGroup,
             background: opt.corCabecalho
         });
         wraper.css({
-            width: (opt.container.width - widthPadding) + widthfixColRigth,
-            height: opt.container.height
+            width: opt.container.width - (widthPadding + widthfixColRigth),
+            height: opt.container.height - heightGroup
         });
     };
     
@@ -604,7 +598,6 @@
      */
      CT.Loading = function(el){
          var template = $("<div class='ct-loader'><p>Aguarde, Carregando...</p></div>");
-         $(el).css({position: "relative", width: "100%;", height: opt.container.height});
          return {
              show: function(){
                  $(el).append(template);
@@ -634,8 +627,8 @@
      * @return {boolean}
      */
     CT.BuildStartCheck = function () {
-        if (!opt.urlDados && opt.urlDados !== ""){ throw new Error("Necessário informar url para buscar os dados"); console.trace();}
-        if (!opt.urlCabecalho && opt.urlCabecalho !== "") {throw new Error("Necessário informar url para buscar os cabeçalhos"); console.trace();}
+        if (!opt.urlDados && opt.urlDados === ""){ throw new Error("Necessário informar url para buscar os dados"); console.trace();}
+        if (!opt.urlCabecalho && opt.urlCabecalho === "") {throw new Error("Necessário informar url para buscar os cabeçalhos"); console.trace();}
         return true;
 
     };
@@ -648,12 +641,15 @@
      * @constructor
      */
     CT.CheckIntegrityProperty = function(data, prop){
-        if(data.hasOwnProperty(prop)){
-            return true;
-        }else{
-            throw new Error("A propriedade: " + prop + ", não faz parte dos dados. \n" + data);
+        try{
+            if(!data.hasOwnProperty(prop)){
+                throw new Error("A propriedade: " + prop + ", não faz parte dos dados. \n" + data);
+            }
+        }catch(e){
+            console.error(e);
             console.trace();
         }
+        return true;
     };
 
     /**
@@ -667,6 +663,7 @@
         opt = $.extend(defaults, options);
         try {
             if (CT.BuildStartCheck()) {
+                CT.MountPrincipalContainer(that);
                 CT.Init.call(that);
             }
             

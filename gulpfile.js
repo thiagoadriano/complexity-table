@@ -25,7 +25,7 @@ gulp.task('pack', () => {
 
 gulp.task('minJs', function(){
   return gulp.src('./public/component/*.js')
-            .pipe(uglifyjs())
+            .pipe(uglifyjs({mangle: false}))
             .pipe(gulp.dest('./dist/'));
 });
 
@@ -41,6 +41,14 @@ gulp.task('removeCompilate', () => {
             .pipe(shell("rm -r dist/complexity.table.jquery.css"))
 });
 
-gulp.task("build", ["minCss", "minJs", "pack", "removeCompilate"], ()=>{
+gulp.task('removeDist', () => {
+  return gulp.src('./')
+          .pipe(shell('rm -r dist'));
+});
+
+gulp.task("build", ["minCss", "minJs", "pack"], ()=>{
   console.log("Package Criado");
+  // return gulp.src("./dist")
+  //           .pipe(shell("rm -r dist/complexity.table.jquery.js"))
+  //           .pipe(shell("rm -r dist/complexity.table.jquery.css"))
 });
