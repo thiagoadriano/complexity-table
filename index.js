@@ -2,7 +2,8 @@
 
 const express = require('express'),
       App     = express(),
-      PORT    = process.env.PORT;
+      PORT    = process.env.PORT,
+      IP      = process.env.IP;
         
 App.use(express.static(__dirname + "/public"));
 
@@ -11,13 +12,20 @@ App.get('/', (req, res) => {
 });
 
 App.get('/data/head', (req, res) => {
-    let Heads = require('./dados/heads_model');
+    let Heads = require('./model/heads_model');
     res.send(Heads);
 });
 
 App.get('/data/list', (req, res) => {
-    let List = require('./dados/mapaAlimentacao_model');
+    let List = require('./model/mapaAlimentacao_model');
     res.send(List);
 });
 
-App.listen(PORT);
+App.get('/data/list/parse', (req, res) => {
+   let List = require('./model/mapaAlimentacao_model');
+   let ParseCorrige = require("./controller/parse")
+   res.send( ParseCorrige(List) );
+});
+
+
+App.listen(PORT, IP);
