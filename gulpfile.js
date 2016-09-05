@@ -4,7 +4,8 @@ let gulp = require("gulp"),
     cssmin = require("gulp-clean-css"),
     zip    = require("gulp-zip"),
     shell = require('gulp-shell'),
-    uglifyjs = require('gulp-uglify');
+    uglifyjs = require('gulp-uglify'),
+    gulpCopy = require('gulp-copy');
 
 const data = new Date();
 let dia = data.getDate() < 10 ? "0" + data.getDate() : data.getDate();
@@ -38,12 +39,17 @@ gulp.task('minCss', function() {
 gulp.task('removeCompilate', () => {
     return gulp.src("./dist")
             .pipe(shell("rm -r dist/complexity.table.jquery.js"))
-            .pipe(shell("rm -r dist/complexity.table.jquery.css"))
+            .pipe(shell("rm -r dist/complexity.table.jquery.css"));
 });
 
 gulp.task('removeDist', () => {
   return gulp.src('./')
           .pipe(shell('rm -r dist'));
+});
+
+gulp.task('copiaHtml', () => {
+  return gulp.src('./public/index.html')
+  .pipe(gulpCopy('./dist/'));
 });
 
 gulp.task("build", ["minCss", "minJs", "pack"], ()=>{

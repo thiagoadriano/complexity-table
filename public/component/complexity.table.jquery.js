@@ -91,7 +91,8 @@
             valores: "status",
             registros: "totalRegistros",
             cabecalhos: "cabecalhos"
-        }
+        },
+        onClickLink: null
     };
 
 
@@ -242,7 +243,7 @@
                     calcPrevGroup = parseInt(th.css("width"), 10) + parseInt(th.css("left"), 10);
                 }
                 else {
-                    CT.MountHeadNoGroup(th, tamH, el, i);
+                    CT.MountHeadNoGroup(th, tamH, el, i, el.nome.value);
                     CT.ConfCheckLastCell(i, arr, th, calcPrevGroup);
                     CT.setFirstCellWidth(i, th);
                     trGroup.append(th);
@@ -277,7 +278,7 @@
             .attr("colspan", el.grupo.length)
             .addClass(opt.classes.bgHeadColor)
             .css(CT.configCellGroup(el, tamW, tamH, leftFirsCol, calcPrevGroup, i));
-        CT.MountLink(el.nome, th);
+        CT.MountLink(el.nome, th, el.nome.value);
     };
 
     /**
@@ -293,7 +294,7 @@
             var th2l = $("<th><span>" + item.value + "</span></th>");
             th2l.css(CT.configCellChildrenGroup(tamW, tamH, th, j))
                 .addClass(opt.classes.bgHeadColor);
-            CT.MountLink(item, th2l);
+            CT.MountLink(item, th2l, item.value);
             trHead.append(th2l);
             CT.COlTotal++;
         });
@@ -305,14 +306,15 @@
      * @param {number} tamH - altura calculada da celula
      * @param {object} el - Elemento atual do array
      * @param {number} i - indice do array
+     * @param {string} indicador - nome do primeiro item da linha
      */
-    CT.MountHeadNoGroup = function(th, tamH, el, i) {
+    CT.MountHeadNoGroup = function(th, tamH, el, i, indicador) {
         th.css(CT.configCellNoGroup(tamH, i))
             .html("<span>" + el.nome.value + "</span>")
             .addClass(opt.classes.bgHeadColor);
             
         if((i === 1 && opt.colTwoFixedLeft) || (i === 0 && opt.colFixedLeft)) th.addClass(opt.classes.fixedCol);
-        CT.MountLink(el.nome, th);
+        CT.MountLink(el.nome, th, indicador);
     };
 
     /**
@@ -360,7 +362,7 @@
                 th.css({
                     right: 0,
                     width: opt.Tamanhos.UltimaCelula.width
-                });
+                }).addClass(opt.classes.fixedCol);
             else
                 th.css({
                     left: (opt.Tamanhos.celula.width * CT.COlTotal) + (opt.Tamanhos.PrimeiraCelula.width - opt.Tamanhos.celula.width),
@@ -439,17 +441,17 @@
                         var tr = $('<tr/>');
                         CT.HighlightEvent(tr);
                         CT.InsertCellFirstData(item, jumpClasse, tr, i, res, voltas);
-                        CT.InsertValues(el, jumpClasse, tr);
+                        CT.InsertValues(el, jumpClasse, tr, item[opt.nomePropriedades.indicador].value);
                         trs.push(tr);
                         voltas++;
-                   })
+                   });
                 }else{
                    var tr = $('<tr/>');
                     CT.HighlightEvent(tr);
                     CT.InsertCellFirstData(item, jumpClasse, tr, i, res);
-                    CT.InsertValues(item, jumpClasse, tr);
-                    trs.push(tr) 
-                };
+                    CT.InsertValues(item, jumpClasse, tr, item[opt.nomePropriedades.indicador].value);
+                    trs.push(tr);
+                }
             });
             return trs;
         }
@@ -468,7 +470,7 @@
         if (CT.CheckIntegrityProperty(item, opt.nomePropriedades.indicador)) {
             var voltas = voltas || 0;
             var tdFirst = $('<td><span>' + item[opt.nomePropriedades.indicador].value + '</span></td>');
-            CT.checkInsertLink(item, tdFirst, true);
+            CT.checkInsertLink(item, tdFirst, true, item[opt.nomePropriedades.indicador].value);
             if (opt.colFixedLeft) tdFirst.addClass(opt.classes.fixedLeft);
             if(CT.rowSpanData) tdFirst.attr('rowspan', 2);
             if(voltas > 0) tdFirst.css({visibility: "hidden", opacity: 0});
@@ -483,11 +485,11 @@
      * @param {string} jumpClasse - mudança na classe para cor de pulo de linha
      * @param {object} tr - linha atual da tabela
      */
-    CT.InsertValues = function(item, jumpClasse, tr) {
+    CT.InsertValues = function(item, jumpClasse, tr, indicador) {
         item = CT.NormalizeArray(item);
         item.forEach(function(val, i, arr) {
             var tdval = $('<td><span>' + val.value + '</span></td>');
-            CT.checkInsertLink(val, tdval);
+            CT.checkInsertLink(val, tdval, false, indicador);
             tdval.css(CT.ConfigCell()).addClass(jumpClasse);
             CT.setFixedCollineData(i, arr, tdval);
             tr.append(tdval);
@@ -501,15 +503,15 @@
      * @param {object} tdFirst - objeto jquery com a primeira celula
      *
      */
-    CT.checkInsertLink = function(itemCol, tdFirst, firstCol) {
+    CT.checkInsertLink = function(itemCol, tdFirst, firstCol, indicador) {
         var item = itemCol instanceof Object && !firstCol ? itemCol : firstCol ? itemCol[opt.nomePropriedades.indicador] : itemCol[opt.nomePropriedades.valores];
         if (Array.isArray(item)) {
             for (var i in item) {
-                CT.MountLink(item[i], tdFirst);
+                CT.MountLink(item[i], tdFirst, indicador);
             }
         }
         else {
-            CT.MountLink(item, tdFirst);
+            CT.MountLink(item, tdFirst, indicador);
         }
     };
 
@@ -517,20 +519,22 @@
      * Cria e monta os links dos valores
      * @param {object} item - elemento da coleção da matrix
      * @param {object} celula - elemento td atual
-     * 
+     * @param {string} indicador - nome do primeiro item da linha
      */
-    CT.MountLink = function(item, celula) {
-        if (item.hasOwnProperty('link') && item.link !== "#" && item.link !== "") {
+    CT.MountLink = function(item, celula, indicador) {
+        if (item !== undefined && item.hasOwnProperty('link') && item.link !== "#" && item.link !== "" && !!opt.onClickLink) {
             var td = celula;
             var span = td.find('span');
             var text = span.text();
             var a = $('<a>' + text + '</a>');
-            a.attr({
-                href: item.link,
-                target: "_blank"
-            });
+            a.on('click', function(event){
+                event.preventDefault();
+                opt.onClickLink(event, opt.parametros, item.link, indicador);
+            }).css({cursor: "pointer", textDecoration: "underline"});
             span.html('');
             span.append(a);
+            
+            
         }
     };
 
@@ -557,7 +561,8 @@
             width: opt.Tamanhos.PrimeiraCelula.width,
             minWidth: opt.Tamanhos.PrimeiraCelula.width,
             maxWidth: opt.Tamanhos.PrimeiraCelula.width,
-            top: (opt.Tamanhos.celula.height * i) + (CT.existGroup ? opt.Tamanhos.celula.height * 2 : opt.Tamanhos.celula.height) + i,
+            top: (CT.rowSpanData ? (opt.Tamanhos.celula.height * 2) * i + i : opt.Tamanhos.celula.height * i) + 
+                 (CT.existGroup ? opt.Tamanhos.celula.height * 2 : opt.Tamanhos.celula.height) + i
         };
     };
     
@@ -636,7 +641,7 @@
             var thGroup = [];
 
             ths.filter(function() {
-                if (!$(this).attr('colspan'))
+                if (!$(this).attr('colspan') && !$(this).hasClass(opt.classes.fixedCol))
                     thCell.push(this);
                 else
                     thGroup.push(this);
@@ -655,7 +660,7 @@
             tds.each(function(i, item) {
                 var position = $(item).position();
                 var id = i - 1;
-
+                
                 $(thCell).eq(id).css('left', position.left);
 
                 if (i === tempPosi && grupoPercorrido < totalGrupo) {
@@ -682,7 +687,6 @@
         var posi = e.currentTarget.offsetTop + parseInt(wraper.height(), 10);
         if (opt.limite > 0 && posi >= posiLasttr && CT.Page <= CT.TotalPages) {
             CT.getData(opt.urlDados, function(res) {
-
                 CT.Page++;
             });
         }
@@ -696,14 +700,17 @@
     CT.HighlightEvent = function(el) {
         if (opt.destacar) {
             el.addClass(opt.classes.existeRealce);
-            el.on('click', function() {
-                if ($(this).hasClass(opt.classes.realce)) {
-                    $(this).removeClass(opt.classes.realce);
-                }
-                else {
-                    $(this).addClass(opt.classes.realce);
-                }
+            el.on('click', function(e) {
+                if(e.target.tagName.toLowerCase() !== "a"){
+                    if ($(this).hasClass(opt.classes.realce)) {
+                        $(this).removeClass(opt.classes.realce);
+                    }
+                    else {
+                        $(this).addClass(opt.classes.realce);
+                    }
+                }   
             });
+            
         }
 
     };

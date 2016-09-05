@@ -13,21 +13,25 @@
 	<script src="lib/jquery/dist/jquery.min.js"></script>
 	<script src="component/complexity.table.jquery.js"></script>
 	<script>
-	/* global $ */
-	$(function(){
-		$("#ComplexityTable").ComplexityTable({
-			urlDados: "/data/list/mes",
-			urlCabecalho: "/data/head/mes",
-			container: {
-				width: 1100, 
-				height: 528
-			},
-			parametros: [{mes: "12"}, {ano: "2016"}],
-			colFixedLeft:  true,
-			colFixedRight: true,
-			colTwoFixedLeft: true,
-			destacar: true
+		/* global $ */
+		$(function(){
+			$("#ComplexityTable").ComplexityTable({
+				urlDados: "/data/list/mes",
+				urlCabecalho: "/data/head/mes",
+				container: {
+					width: 1100, 
+					height: 528
+				},
+				parametros: [{mes: "12"}, {ano: "2016"}],
+				colFixedLeft:  true,
+				colFixedRight: true,
+				colTwoFixedLeft: true,
+				destacar: true,
+				onClickLink: function(element, parameters, link, indicador){
+					console.log(element, parameters, link, indicador);
+				}
+				
+			});
 		});
-	});
 	</script>
 </body>
