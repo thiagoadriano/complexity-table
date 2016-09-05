@@ -1,12 +1,12 @@
-/* global jQuery */
-
 /** 
- * @classe: ComplexityTable
- * @description: Classe para criação da tabela com cabeçalhos e dados dinamicos
- *                 com congelamento do cabeçalho e colunas
- * @version: 0.0.1
- *
- */
+ * @class: ComplexityTable jQuery
+ * @description: Classe para criação da tabela com cabeçalhos e dados dinamicos com congelamento do cabeçalho e colunas
+ * @version: 1.0.2
+ * @author: Thiago Adriano <thiago.s.adriano@gmail.com>
+ * @copyright: Thiago Adriano ©2016
+ * @license: MIT license
+*/
+
 //TODO: refatorar os metodos por conta de objetos nulos
 //TODO: Corrigir cabeçalho sem grupo
 //TODO: Fazzer ultima coluna rolar com scroll quando naõ existir coluna a direita fixa
@@ -25,7 +25,7 @@
     CT.Params = "";
     CT.COlTotal = 0;
     CT.idContiner = null;
-
+    CT.rowSpanData = false;
     var opt = {};
 
     var htmlTemplate =
@@ -74,6 +74,7 @@
             height: 528
         },
         colFixedLeft: false,
+        colTwoFixedLeft: false,
         colFixedRight: false,
         classes: {
             fixedLeft: "fixed-left",
@@ -133,7 +134,8 @@
             url: url + CT.URLParams(),
             method: "GET",
             success: function(res) {
-                if (callback) callback(res);
+                CT.CheckFirstCellRowSpanData(res[0].status);
+                callback(res);
             },
             error: function(err) {
                 CT.ExceptionError("Erro inesperado aconteceu ao carregar as informações.<br>" + "<br>" + err.statusText + "<br>" + err.responseText).show();
@@ -237,10 +239,10 @@
                     CT.HeadTreatment(th, el, tamW, tamH, leftFirsCol, calcPrevGroup, i);
                     trGroup.append(th);
                     CT.HeadSubGroup(el, trHead, tamW, tamH, th);
-                    calcPrevGroup = parseInt(th.css("width")) + parseInt(th.css("left"));
+                    calcPrevGroup = parseInt(th.css("width"), 10) + parseInt(th.css("left"), 10);
                 }
                 else {
-                    CT.MountHeadNoGroup(th, tamH, el);
+                    CT.MountHeadNoGroup(th, tamH, el, i);
                     CT.ConfCheckLastCell(i, arr, th, calcPrevGroup);
                     CT.setFirstCellWidth(i, th);
                     trGroup.append(th);
@@ -302,14 +304,16 @@
      * @param {object} th - Objeto jQuery com a celula atual do cabeçalho
      * @param {number} tamH - altura calculada da celula
      * @param {object} el - Elemento atual do array
+     * @param {number} i - indice do array
      */
-    CT.MountHeadNoGroup = function(th, tamH, el) {
-        th.css(CT.configCellNoGroup(tamH))
+    CT.MountHeadNoGroup = function(th, tamH, el, i) {
+        th.css(CT.configCellNoGroup(tamH, i))
             .html("<span>" + el.nome.value + "</span>")
-            .addClass(opt.classes.fixedCol)
             .addClass(opt.classes.bgHeadColor);
+            
+        if((i === 1 && opt.colTwoFixedLeft) || (i === 0 && opt.colFixedLeft)) th.addClass(opt.classes.fixedCol);
         CT.MountLink(el.nome, th);
-    }
+    };
 
     /**
      * Função para corrigir array com valores faltantes em realção ao cabeçalho
@@ -335,11 +339,12 @@
      * @param {object} th - objeto da celula atual
      */
     CT.setFirstCellWidth = function(i, th) {
-        if (i === 0)
+        if (i === 0 || (opt.colTwoFixedLeft && i === 1))
             th.css({
-                width: opt.Tamanhos.PrimeiraCelula.width,
-                left: opt.Tamanhos.celula.width * i
+                width: i === 1 ? opt.Tamanhos.celula.width : opt.Tamanhos.PrimeiraCelula.width,
+                left: i === 1 ? opt.Tamanhos.PrimeiraCelula.width * i : opt.Tamanhos.celula.width * i
             });
+            
     };
 
     /**
@@ -369,11 +374,12 @@
     /**
      * Configuração da celula sem grupo
      * @param {number} tamH - Altura da celula
-     * @returns {{width: number, height: number, top: number, zIndex: number, background: string}} - objeto de configuração
+     * @param {number} i - indice do array
+     * @returns {object} - objeto de configuração
      */
-    CT.configCellNoGroup = function(tamH) {
+    CT.configCellNoGroup = function(tamH, i) {
         return {
-            width: opt.Tamanhos.PrimeiraCelula.width,
+            width: i < 1 ? opt.Tamanhos.PrimeiraCelula.width : opt.Tamanhos.celula.width,
             height: CT.existGroup ? tamH * 2 : tamH,
             top: 0,
             zIndex: 3
@@ -411,7 +417,8 @@
         return {
             width: tamW * el.grupo.length,
             height: tamH,
-            left: i === 1 ? leftFirsCol * CT.COlTotal : calcPrevGroup
+            left: i === 1 && !opt.colTwoFixedLeft ? leftFirsCol * CT.COlTotal : 
+                    i === 2 && opt.colTwoFixedLeft ? leftFirsCol + tamW  : calcPrevGroup
         };
     };
 
@@ -424,13 +431,25 @@
         if (CT.isArray(res)) {
             var trs = [];
             res.forEach(function(item, i) {
-                var jumpClasse = i % 2 === 0 ? opt.classes.linhaPar : opt.classes.linhaImpar,
-                    tr = $('<tr/>');
-
-                CT.HighlightEvent(tr);
-                CT.InsertCellFirstData(item, jumpClasse, tr, i);
-                CT.InsertValues(item, jumpClasse, tr);
-                trs.push(tr);
+                var jumpClasse = i % 2 === 0 ? opt.classes.linhaPar : opt.classes.linhaImpar;
+                        
+                if(CT.rowSpanData){
+                    var voltas = 0;
+                   item.status.forEach(function(el){
+                        var tr = $('<tr/>');
+                        CT.HighlightEvent(tr);
+                        CT.InsertCellFirstData(item, jumpClasse, tr, i, res, voltas);
+                        CT.InsertValues(el, jumpClasse, tr);
+                        trs.push(tr);
+                        voltas++;
+                   })
+                }else{
+                   var tr = $('<tr/>');
+                    CT.HighlightEvent(tr);
+                    CT.InsertCellFirstData(item, jumpClasse, tr, i, res);
+                    CT.InsertValues(item, jumpClasse, tr);
+                    trs.push(tr) 
+                };
             });
             return trs;
         }
@@ -443,13 +462,17 @@
      * @param {string} jumpClasse - mudança na classe para cor de pulo de linha
      * @param {object} tr - linha atual da tabela
      * @param {number} i - indice do array
+     * @param {array} arr - array de objetos
      */
-    CT.InsertCellFirstData = function(item, jumpClasse, tr, i) {
+    CT.InsertCellFirstData = function(item, jumpClasse, tr, i, arr, voltas) {
         if (CT.CheckIntegrityProperty(item, opt.nomePropriedades.indicador)) {
+            var voltas = voltas || 0;
             var tdFirst = $('<td><span>' + item[opt.nomePropriedades.indicador].value + '</span></td>');
             CT.checkInsertLink(item, tdFirst, true);
             if (opt.colFixedLeft) tdFirst.addClass(opt.classes.fixedLeft);
-            tdFirst.css(CT.ConfigFirstCell(i)).addClass(jumpClasse);
+            if(CT.rowSpanData) tdFirst.attr('rowspan', 2);
+            if(voltas > 0) tdFirst.css({visibility: "hidden", opacity: 0});
+            tdFirst.css(CT.ConfigFirstCell(i, arr)).addClass(jumpClasse);
             tr.append(tdFirst);
         }
     };
@@ -461,16 +484,15 @@
      * @param {object} tr - linha atual da tabela
      */
     CT.InsertValues = function(item, jumpClasse, tr) {
-        if (CT.CheckIntegrityProperty(item, opt.nomePropriedades.valores)) {
-            item[opt.nomePropriedades.valores] = CT.NormalizeArray(item[opt.nomePropriedades.valores]);
-            item[opt.nomePropriedades.valores].forEach(function(val, i, arr) {
-                var tdval = $('<td><span>' + val.value + '</span></td>');
-                CT.checkInsertLink(val, tdval);
-                tdval.css(CT.ConfigCell()).addClass(jumpClasse);
-                CT.setFixedCollineData(i, arr, tdval);
-                tr.append(tdval);
-            });
-        }
+        item = CT.NormalizeArray(item);
+        item.forEach(function(val, i, arr) {
+            var tdval = $('<td><span>' + val.value + '</span></td>');
+            CT.checkInsertLink(val, tdval);
+            tdval.css(CT.ConfigCell()).addClass(jumpClasse);
+            CT.setFixedCollineData(i, arr, tdval);
+            tr.append(tdval);
+        });
+        
     };
 
     /**
@@ -527,15 +549,28 @@
      * Configurações padrões da primeira celula
      * @param {number} i - Indice atual para calculo dos posições
      * @return {object} - configuração definida da celula
+     * @param {array} arr - array de objetos
      */
-    CT.ConfigFirstCell = function(i) {
+    CT.ConfigFirstCell = function(i, arr) {
         return {
-            height: opt.Tamanhos.PrimeiraCelula.height,
+            height: CT.rowSpanData ? opt.Tamanhos.celula.height * 2 + 2: opt.Tamanhos.PrimeiraCelula.height,
             width: opt.Tamanhos.PrimeiraCelula.width,
             minWidth: opt.Tamanhos.PrimeiraCelula.width,
             maxWidth: opt.Tamanhos.PrimeiraCelula.width,
             top: (opt.Tamanhos.celula.height * i) + (CT.existGroup ? opt.Tamanhos.celula.height * 2 : opt.Tamanhos.celula.height) + i,
         };
+    };
+    
+    
+    /**
+     * Verifica se a primeira célula será dupla
+     * @param {array} array - array de objetos
+     *
+     */
+    CT.CheckFirstCellRowSpanData = function(array){
+        if(array.length === 2 && Array.isArray(array[0])){
+            CT.rowSpanData = true;
+        }
     };
 
     /**
@@ -846,6 +881,8 @@
             throw new Error("Necessário informar url para buscar os dados");
 
         }
+        
+        if(opt.colTwoFixedLeft && !opt.colFixedLeft) opt.colFixedLeft = true;
 
         return true;
     };

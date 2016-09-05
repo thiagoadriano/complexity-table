@@ -25,7 +25,7 @@ gulp.task('pack', () => {
 
 gulp.task('minJs', function(){
   return gulp.src('./public/component/*.js')
-            .pipe(uglifyjs({mangle: false}))
+            .pipe(uglifyjs({mangle: false, preserveComments: "license"}))
             .pipe(gulp.dest('./dist/'));
 });
 

@@ -16,8 +16,8 @@
 	/* global $ */
 	$(function(){
 		$("#ComplexityTable").ComplexityTable({
-			urlDados: "/data/list/parse",
-			urlCabecalho: "/data/head",
+			urlDados: "/data/list/mes",
+			urlCabecalho: "/data/head/mes",
 			container: {
 				width: 1100, 
 				height: 528
@@ -25,6 +25,7 @@
 			parametros: [{mes: "12"}, {ano: "2016"}],
 			colFixedLeft:  true,
 			colFixedRight: true,
+			colTwoFixedLeft: true,
 			destacar: true
 		});
 	});
