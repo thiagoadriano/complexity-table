@@ -79,6 +79,7 @@
         classes: {
             fixedLeft: "fixed-left",
             fixedRight: "fixed-right",
+            fixedTwo : "fixed-two",
             fixedCol: "fixed-col",
             bgHeadColor: "head-bg-color",
             linhaPar: "odd-line",
@@ -473,7 +474,7 @@
             CT.checkInsertLink(item, tdFirst, true, item[opt.nomePropriedades.indicador].value);
             if (opt.colFixedLeft) tdFirst.addClass(opt.classes.fixedLeft);
             if(CT.rowSpanData) tdFirst.attr('rowspan', 2);
-            if(voltas > 0) tdFirst.css({visibility: "hidden", opacity: 0});
+            if(voltas > 0) tdFirst.css({visibility: "hidden", opacity: 0, top:0, zIndex: -1});
             tdFirst.css(CT.ConfigFirstCell(i, arr)).addClass(jumpClasse);
             tr.append(tdFirst);
         }
@@ -492,6 +493,7 @@
             CT.checkInsertLink(val, tdval, false, indicador);
             tdval.css(CT.ConfigCell()).addClass(jumpClasse);
             CT.setFixedCollineData(i, arr, tdval);
+            CT.FixedTwoCol(tdval, i);
             tr.append(tdval);
         });
         
@@ -548,6 +550,18 @@
         if (opt.colFixedRight && i === arr.length - 1)
             tdval.addClass(opt.classes.fixedRight).css(CT.ConfigLastCell());
     };
+    
+    /**
+     * Seta a segunda coluna fixa
+     * @param {object} td - elemento jquery
+     * @param {number} i - indice do array
+     *
+     */
+    CT.FixedTwoCol = function(td, i){
+        if(opt.colTwoFixedLeft && i === 0){
+            td.addClass(opt.classes.fixedLeft).addClass(opt.classes.fixedTwo).css({left: opt.Tamanhos.PrimeiraCelula.width});
+        }
+    }
 
     /**
      * Configurações padrões da primeira celula
@@ -633,6 +647,7 @@
             var trs = tbody.find('tr'),
                 fixedL = tbody.find('.' + opt.classes.fixedLeft),
                 fixedR = tbody.find('.' + opt.classes.fixedRight),
+                fixed2 = tbody.find('.' + opt.classes.fixedTwo),
                 tds = trs.eq(0).find('td');
             var ths = thead.find('th').filter(function() {
                 if (!$(this).hasClass(opt.classes.fixedCol)) return this;
@@ -653,13 +668,15 @@
 
             trs.each(function(i, item) {
                 var position = $(item).position();
-                fixedL.eq(i).css("top", position.top);
+                fixedL.eq( opt.colTwoFixedLeft ? i  * 2 : i ).css("top", position.top);
                 fixedR.eq(i).css("top", position.top);
+                if(opt.colTwoFixedLeft) fixed2.eq(i).css("top", position.top);
             });
 
             tds.each(function(i, item) {
-                var position = $(item).position();
-                var id = i - 1;
+                var move = opt.colTwoFixedLeft ? tds[i + 1 >= tds.length ? tds.length - 1 : i + 1] : item;
+                var position = $(move).position();
+                var id = i - 1 ;
                 
                 $(thCell).eq(id).css('left', position.left);
 
@@ -753,14 +770,15 @@
         var widthfixColRigth = !opt.colFixedRight ? 0 : opt.Tamanhos.UltimaCelula.width;
 
         wrap.css({
-            width: opt.container.width - widthPadding,
+            width: opt.colTwoFixedLeft ? (opt.container.width - widthPadding) - opt.Tamanhos.celula.width : opt.container.width - widthPadding,
             height: opt.container.height - heightGroup,
-            paddingLeft: widthPadding,
+            paddingLeft: opt.colTwoFixedLeft ? widthPadding + opt.Tamanhos.celula.width : widthPadding,
             paddingTop: heightGroup,
             background: opt.corCabecalho
         });
         wraper.css({
-            width: opt.container.width - (widthPadding + widthfixColRigth),
+            width: opt.colTwoFixedLeft ? (opt.container.width - (widthPadding + widthfixColRigth)) - opt.Tamanhos.celula.width : 
+                    opt.container.width - (widthPadding + widthfixColRigth),
             height: opt.container.height - heightGroup
         });
     };
