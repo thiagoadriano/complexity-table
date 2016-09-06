@@ -16,8 +16,8 @@
 		/* global $ */
 		$(function(){
 			$("#ComplexityTable").ComplexityTable({
-				urlDados: "/data/list/mes",
-				urlCabecalho: "/data/head/mes",
+				urlDados: "/data/list/parse",
+				urlCabecalho: "/data/head",
 				container: {
 					width: 1100, 
 					height: 528
@@ -25,7 +25,7 @@
 				parametros: [{mes: "12"}, {ano: "2016"}],
 				colFixedLeft:  true,
 				colFixedRight: true,
-				colTwoFixedLeft: true,
+				colTwoFixedLeft: false,
 				destacar: true,
 				onClickLink: function(element, parameters, link, indicador){
 					console.log(element, parameters, link, indicador);

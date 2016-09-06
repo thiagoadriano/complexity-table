@@ -1,4 +1,4 @@
-/** 
+/**
  * @class: ComplexityTable jQuery
  * @description: Classe para criação da tabela com cabeçalhos e dados dinamicos com congelamento do cabeçalho e colunas
  * @version: 1.0.2
@@ -12,7 +12,7 @@
 //TODO: Fazzer ultima coluna rolar com scroll quando naõ existir coluna a direita fixa
 //TODO: Ajustar para quando não tiver cabecalhos em grupo
 //TODO: Finalizar o carregamento com scroll
-//TODO: realizar o segundo cenário: 
+//TODO: realizar o segundo cenário:
         //Duas linhas para cada indicador
         //Duas colunas fixas a esquerda
 (function($) {
@@ -313,14 +313,14 @@
         th.css(CT.configCellNoGroup(tamH, i))
             .html("<span>" + el.nome.value + "</span>")
             .addClass(opt.classes.bgHeadColor);
-            
+
         if((i === 1 && opt.colTwoFixedLeft) || (i === 0 && opt.colFixedLeft)) th.addClass(opt.classes.fixedCol);
         CT.MountLink(el.nome, th, indicador);
     };
 
     /**
      * Função para corrigir array com valores faltantes em realção ao cabeçalho
-     * @param {Array} arr - array atual do grupo 
+     * @param {Array} arr - array atual do grupo
      *
      */
     CT.NormalizeArray = function(arr) {
@@ -347,7 +347,7 @@
                 width: i === 1 ? opt.Tamanhos.celula.width : opt.Tamanhos.PrimeiraCelula.width,
                 left: i === 1 ? opt.Tamanhos.PrimeiraCelula.width * i : opt.Tamanhos.celula.width * i
             });
-            
+
     };
 
     /**
@@ -385,7 +385,7 @@
             width: i < 1 ? opt.Tamanhos.PrimeiraCelula.width : opt.Tamanhos.celula.width,
             height: CT.existGroup ? tamH * 2 : tamH,
             top: 0,
-            zIndex: 3
+            zIndex: i < 1 ? 4 : 3
         };
     };
 
@@ -420,7 +420,7 @@
         return {
             width: tamW * el.grupo.length,
             height: tamH,
-            left: i === 1 && !opt.colTwoFixedLeft ? leftFirsCol * CT.COlTotal : 
+            left: i === 1 && !opt.colTwoFixedLeft ? leftFirsCol * CT.COlTotal :
                     i === 2 && opt.colTwoFixedLeft ? leftFirsCol + tamW  : calcPrevGroup
         };
     };
@@ -435,7 +435,7 @@
             var trs = [];
             res.forEach(function(item, i) {
                 var jumpClasse = i % 2 === 0 ? opt.classes.linhaPar : opt.classes.linhaImpar;
-                        
+
                 if(CT.rowSpanData){
                     var voltas = 0;
                    item.status.forEach(function(el){
@@ -487,8 +487,9 @@
      * @param {object} tr - linha atual da tabela
      */
     CT.InsertValues = function(item, jumpClasse, tr, indicador) {
-        item = CT.NormalizeArray(item);
-        item.forEach(function(val, i, arr) {
+        var list = $.isArray(item) ? item : item.status;
+        list = CT.NormalizeArray(list);
+        list.forEach(function(val, i, arr) {
             var tdval = $('<td><span>' + val.value + '</span></td>');
             CT.checkInsertLink(val, tdval, false, indicador);
             tdval.css(CT.ConfigCell()).addClass(jumpClasse);
@@ -496,7 +497,7 @@
             CT.FixedTwoCol(tdval, i);
             tr.append(tdval);
         });
-        
+
     };
 
     /**
@@ -535,8 +536,8 @@
             }).css({cursor: "pointer", textDecoration: "underline"});
             span.html('');
             span.append(a);
-            
-            
+
+
         }
     };
 
@@ -550,7 +551,7 @@
         if (opt.colFixedRight && i === arr.length - 1)
             tdval.addClass(opt.classes.fixedRight).css(CT.ConfigLastCell());
     };
-    
+
     /**
      * Seta a segunda coluna fixa
      * @param {object} td - elemento jquery
@@ -575,12 +576,12 @@
             width: opt.Tamanhos.PrimeiraCelula.width,
             minWidth: opt.Tamanhos.PrimeiraCelula.width,
             maxWidth: opt.Tamanhos.PrimeiraCelula.width,
-            top: (CT.rowSpanData ? (opt.Tamanhos.celula.height * 2) * i + i : opt.Tamanhos.celula.height * i) + 
+            top: (CT.rowSpanData ? (opt.Tamanhos.celula.height * 2) * i + i : opt.Tamanhos.celula.height * i) +
                  (CT.existGroup ? opt.Tamanhos.celula.height * 2 : opt.Tamanhos.celula.height) + i
         };
     };
-    
-    
+
+
     /**
      * Verifica se a primeira célula será dupla
      * @param {array} array - array de objetos
@@ -677,7 +678,7 @@
                 var move = opt.colTwoFixedLeft ? tds[i + 1 >= tds.length ? tds.length - 1 : i + 1] : item;
                 var position = $(move).position();
                 var id = i - 1 ;
-                
+
                 $(thCell).eq(id).css('left', position.left);
 
                 if (i === tempPosi && grupoPercorrido < totalGrupo) {
@@ -725,12 +726,37 @@
                     else {
                         $(this).addClass(opt.classes.realce);
                     }
-                }   
+                    
+                    CT.lineHighligthRowSpan(e, $(this));
+                }
             });
-            
         }
 
     };
+    
+    
+    
+    /**
+     * Caso tenha RowSpan realiza o higthlight na linha
+     * @param {object} event - objeto de evento global do browser
+     * @param {object} element - linha atual para tratamento
+     */
+     
+     CT.lineHighligthRowSpan = function(event, element){
+        if(CT.rowSpanData){
+            var index = event.currentTarget.rowIndex - 2;
+            var line = element.find("td").eq(0).css("visibility") === "visible" ? index + 1 : index - 1;
+            var tr  = $('table tbody').find('tr');
+            
+            if (tr.eq(line).hasClass(opt.classes.realce)) {
+                tr.eq(line).removeClass(opt.classes.realce);
+            }
+            else {
+                tr.eq(line).addClass(opt.classes.realce);
+            }
+        }
+     }
+
 
     /**
      * Fixa as configurações do container principal
@@ -777,7 +803,7 @@
             background: opt.corCabecalho
         });
         wraper.css({
-            width: opt.colTwoFixedLeft ? (opt.container.width - (widthPadding + widthfixColRigth)) - opt.Tamanhos.celula.width : 
+            width: opt.colTwoFixedLeft ? (opt.container.width - (widthPadding + widthfixColRigth)) - opt.Tamanhos.celula.width :
                     opt.container.width - (widthPadding + widthfixColRigth),
             height: opt.container.height - heightGroup
         });
@@ -800,7 +826,7 @@
             }
         };
     };
-   
+
     /**
      * Colocar exceção na tela com erro informando ao usuário o procedimento
      * @param {string} msg - mensagem da exceção
@@ -906,7 +932,7 @@
             throw new Error("Necessário informar url para buscar os dados");
 
         }
-        
+
         if(opt.colTwoFixedLeft && !opt.colFixedLeft) opt.colFixedLeft = true;
 
         return true;
