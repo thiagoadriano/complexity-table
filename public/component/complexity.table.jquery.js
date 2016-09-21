@@ -965,19 +965,31 @@
      * @constructor
      */
     $.fn.ComplexityTable = function(options) {
-        var that = this;
-        opt = $.extend(defaults, options);
-
-        try {
-            if (CT.BuildStartCheck()) {
-                CT.idContiner = that.attr("id");
-                CT.MountPrincipalContainer(that);
-                CT.Init.call(that);
+        
+        if (typeof options === 'string' && options === 'destroy') {
+            var wrap = $(this).find('.ct-wrap');
+            if (wrap.length) {
+                var link = wrap.find('a');
+                link.off().remove();
+                wrap.remove();
+                $(this).removeAttr('style');
             }
 
-        }
-        catch (err) {
-            console.error(err);
+        } else if (options instanceof Object) {
+            var that = this;
+            opt = $.extend(defaults, options);
+    
+            try {
+                if (CT.BuildStartCheck()) {
+                    CT.idContiner = that.attr("id");
+                    CT.MountPrincipalContainer(that);
+                    CT.Init.call(that);
+                }
+    
+            }
+            catch (err) {
+                console.error(err);
+            }
         }
 
         return this;
