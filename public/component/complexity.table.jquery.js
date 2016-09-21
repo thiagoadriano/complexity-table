@@ -973,6 +973,14 @@
                 link.off().remove();
                 wrap.remove();
                 $(this).removeAttr('style');
+                CT.existGroup = false;
+                CT.Page = 1;
+                CT.TotalRegistros = 0;
+                CT.TotalPages = 0;
+                CT.Params = "";
+                CT.COlTotal = 0;
+                CT.idContiner = null;
+                CT.rowSpanData = false;
             }
 
         } else if (options instanceof Object) {
