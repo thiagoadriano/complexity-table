@@ -1,7 +1,7 @@
 /**
  * @class: ComplexityTable jQuery
  * @description: Classe para criação da tabela com cabeçalhos e dados dinamicos com congelamento do cabeçalho e colunas
- * @version: 1.0.2
+ * @version: 1.0.4
  * @author: Thiago Adriano <thiago.s.adriano@gmail.com>
  * @copyright: Thiago Adriano ©2016
  * @license: MIT license
@@ -38,11 +38,11 @@
             '</div>' +
         '</div>';
 
-    var wrap = $(htmlTemplate),
-        wraper = wrap.find(".ct-wraper"),
-        table = wraper.find('table'),
-        thead = table.find("thead"),
-        tbody = table.find("tbody");
+    var wrap = null,
+        wraper = null,
+        table = null,
+        thead = null,
+        tbody = null;
 
 
     /**
@@ -115,6 +115,8 @@
                     CT.setTotalPages();
                     CT.checkExistGroup(res[opt.nomePropriedades.cabecalhos]);
                     callback(res[opt.nomePropriedades.cabecalhos]);
+                    
+                    
                 }
 
             },
@@ -634,7 +636,7 @@
                 CT.creteLineData(res).forEach(function(el) {
                     tbody.append(el);
                 });
-                callback(el);
+                callback(el, wrap);
             });
         });
     };
@@ -776,8 +778,8 @@
      * Metodo para configurar tabela e inserir na página
      *
      */
-    CT.MountTable = function(el) {
-        CT.MountContainer();
+    CT.MountTable = function(el, content) {
+        CT.MountContainer(content);
         table.css({
             width: CT.DefineTableWidth()
         });
@@ -790,7 +792,7 @@
      * Monta o container que recebe a tabela
      *
      */
-    CT.MountContainer = function() {
+    CT.MountContainer = function (wrap) {
         var heightGroup = !CT.existGroup ? opt.Tamanhos.celula.height : opt.Tamanhos.celula.height * 2;
         var widthPadding = !opt.colFixedLeft ? 0 : opt.Tamanhos.PrimeiraCelula.width;
         var widthfixColRigth = !opt.colFixedRight ? 0 : opt.Tamanhos.UltimaCelula.width;
@@ -911,9 +913,16 @@
      */
     CT.Init = function() {
         var that = this;
+        wrap = $(htmlTemplate);
+        wraper = wrap.find(".ct-wraper");
+        table = wraper.find('table');
+        thead = table.find("thead");
+        tbody = table.find("tbody");
         CT.Loading(that).show();
         CT.mountParams(opt.parametros);
-        CT.insertHead(that, CT.MountTable);
+        CT.insertHead(that, function (el, content) {
+            CT.MountTable(el, content);
+        });
         CT.scrollEvent();
     };
 
@@ -957,6 +966,28 @@
         }
         return true;
     };
+    
+    /**
+     * Limpa as variaveis para uma nova requisição do componente
+     *
+     */
+    
+    CT.ClearVariables = function(){
+        CT.existGroup = false;
+        CT.Page = 1;
+        CT.TotalRegistros = 0;
+        CT.TotalPages = 0;
+        CT.Params = "";
+        CT.COlTotal = 0;
+        CT.idContiner = null;
+        CT.rowSpanData = false;
+        opt = {};
+        wrap = null;
+        wraper = null;
+        table = null;
+        thead = null;
+        tbody = null;
+    };
 
     /**
      * Construtor do plugin jQuery
@@ -972,15 +1003,8 @@
                 var link = wrap.find('a');
                 link.off().remove();
                 wrap.remove();
-                $(this).removeAttr('style');
-                CT.existGroup = false;
-                CT.Page = 1;
-                CT.TotalRegistros = 0;
-                CT.TotalPages = 0;
-                CT.Params = "";
-                CT.COlTotal = 0;
-                CT.idContiner = null;
-                CT.rowSpanData = false;
+                $(this).off().removeAttr('style');
+                CT.ClearVariables();
             }
 
         } else if (options instanceof Object) {
